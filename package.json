@@ -1,0 +1,12 @@
+{
+  "name": "hw3",
+  "version": "1.0.0",
+  "description": "HW3_networks",
+  "main": "client.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Chondromatidis Eleftherios",
+  "license": "ISC",
+  "type": "module"
+}
