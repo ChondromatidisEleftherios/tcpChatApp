@@ -44,7 +44,7 @@ import * as net from "net";
 	}
 
 	function handleError(err) {
-		console.log(`Connection could not be made, error code: ${err}`);
+		console.log(`Connection could not be made, error message: ${err["message"]}`);
 	}
 
 

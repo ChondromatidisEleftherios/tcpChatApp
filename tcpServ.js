@@ -44,7 +44,7 @@ import * as net from "net";
 	server.listen({ port: portNum, host: loopbackAddress }, portAndIpInfo(portNum, loopbackAddress));
 
 	function handleError(err) {
-		console.log(`Connection could not be made, error code: ${err}`);
+		console.log(`Connection could not be made, error message: ${err["message"]}`);
 	}
 
 	function portAndIpInfo(portNum, loopbackAddress) {
