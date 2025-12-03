@@ -13,7 +13,7 @@ import * as net from "net";
 
 	function communicate(socket) {
 		console.log(`Incoming connection from ${socket.remoteAddress} \n`);
-		console.log("--- Chat area --- \n");
+		console.log("----- Chat area ----- \n");
 		socket.once("data", getClientName);
 		socket.on("error", handleError);
 		process.stdin.on("data", sendMessage);

@@ -12,7 +12,7 @@ import * as net from "net";
 		console.error("No Username inserted!!! Terminating...");
 		return 1;
 	}
-	else if (username === "Everyone") {
+	else if (username.toLowerCase() === "everyone") {
 		console.error("Forbidden Name! Try another one!");
 		return 1;
 	}
@@ -31,7 +31,7 @@ import * as net from "net";
 			if (inputToString.trim() === "" || inputToString.trim() === undefined) {
 				console.error("Empty Message! Try again! \n")
 			}
-			else if (inputToString.trim() === "Disconnect") {
+			else if (inputToString.trim() === "disconnect") {
 				client.end();
 				process.stdin.pause();
 			}

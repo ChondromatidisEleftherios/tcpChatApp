@@ -18,8 +18,8 @@ import * as net from "net";
 	client.on("end", endCommunication);
 
 	function communicate() {
-		console.log("Connected to Server! \n");
-		console.log("--- Chat area --- \n");
+		console.log("\nSuccessfully Connected to Server! \n");
+		console.log("----- Chat area ----- \n");
 		client.write(username.toString());
 		process.stdin.on("data", getInput);
 		function getInput(input) {

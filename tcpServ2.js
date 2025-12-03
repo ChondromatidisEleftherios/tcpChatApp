@@ -5,7 +5,7 @@
 import * as net from "net";
 
 (function main() {
-	const chatGuide = `Welcome! If you want to chat with a specific (online) user, just type their name and then the character /\nExample: Nick /Hey Nick! \nType: Disconnect to leave the chat\n`;
+	const chatGuide = `\nWelcome! \n- If you want to chat with a specific (online) user, just type their name and then the character /\nExample: Nick /Hey Nick! \n- If you want to leave the chat, type: disconnect\n`;
 	const clientsHashMap = new Map();
 	const portNum = 6666;
 	const loopbackAddress = "127.0.0.1";
@@ -32,18 +32,18 @@ import * as net from "net";
 			const specialCharacterIndex = clientOriginalMessage.indexOf("/");
 			if (specialCharacterIndex >= 1) {
 				const clientMessage = clientOriginalMessage.slice(specialCharacterIndex + 1, clientOriginalMessage.length);
-				let messageReciever = clientOriginalMessage.slice(0, specialCharacterIndex);
-				messageReciever = messageReciever.trim();
-				const recieverSocket = clientsHashMap.get(messageReciever);
-				if (recieverSocket === undefined) {
+				let messageReceiver = clientOriginalMessage.slice(0, specialCharacterIndex);
+				messageReceiver = messageReceiver.trim();
+				const receiverSocket = clientsHashMap.get(messageReceiver);
+				if (receiverSocket === undefined) {
 					socket.write("User does not exist or is NOT connected at the moment!\n");
 				}
-				else if (recieverSocket === socket) {
+				else if (receiverSocket === socket) {
 					socket.write("You cannot send messages to youself!\n");
 				}
 				else {
 					const formatMessage = `${messageSender}: ${clientMessage}`;
-					recieverSocket.write(formatMessage);
+					receiverSocket.write(formatMessage);
 				}
 			}
 			else {
@@ -60,7 +60,7 @@ import * as net from "net";
 
 		function handleError(err) {
 			console.log(`Connection could not be made, error message: ${err["message"]}`);
-			if (err["message"] == "read ECONNRESET") {
+			if (err["message"] === "read ECONNRESET") {
 				removeDisconnectedUser();
 			}
 		}

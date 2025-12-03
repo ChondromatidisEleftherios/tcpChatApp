@@ -5,7 +5,7 @@
 import * as net from "net";
 
 (function main() {
-	const chatGuide = `Welcome! If you want to chat with a specific (online) user, just type their name and then the character /\nExample: Nick /Hey Nick! \nIf you want to message everyone who is online, type: Everyone / \nType: Disconnect to leave the chat\n`;
+	const chatGuide = `\nWelcome!\n- If you want to chat with a specific (online) user, just type their name and then the character /\nExample: Nick /Hey Nick! \n- If you want to message everyone who is online, type: everyone / \n- If you want to leave the chat, type: disconnect\n`;
 	const clientsHashMap = new Map();
 	const portNum = 6666;
 	const loopbackAddress = "127.0.0.1";
@@ -27,25 +27,24 @@ import * as net from "net";
 
 		function forwardMessage(message) {
 			const messageSender = getSenderName(socket);
-			let recieverSockets = [];
 			const clientOriginalMessage = message.toString();
 			const specialCharacterIndex = clientOriginalMessage.indexOf("/");
 			if (specialCharacterIndex >= 1) {
 				const clientMessage = clientOriginalMessage.slice(specialCharacterIndex + 1, clientOriginalMessage.length);
-				let messageReciever = clientOriginalMessage.slice(0, specialCharacterIndex);
-				messageReciever = messageReciever.trim();
-				if (messageReciever !== "Everyone" && (messageReciever !== "")) {
-					const recieverSocket = clientsHashMap.get(messageReciever);
+				let messageReceiver = clientOriginalMessage.slice(0, specialCharacterIndex);
+				messageReceiver = messageReceiver.trim();
+				if (messageReceiver !== "everyone" && (messageReceiver !== "")) {
+					const receiverSocket = clientsHashMap.get(messageReceiver);
 
-					if (recieverSocket === undefined) {
+					if (receiverSocket === undefined) {
 						socket.write("User does not exist or is NOT connected at the moment!\n");
 					}
-					else if (recieverSocket === socket) {
+					else if (receiverSocket === socket) {
 						socket.write("You cannot send messages to youself!\n");
 					}
 					else {
 						const formatMessage = `${messageSender}: ${clientMessage}`;
-						recieverSocket.write(formatMessage);
+						receiverSocket.write(formatMessage);
 					}
 				}
 				else {
@@ -67,7 +66,7 @@ import * as net from "net";
 
 		function handleError(err) {
 			console.log(`Connection could not be made, error message: ${err["message"]}`);
-			if (err["message"] == "read ECONNRESET") {
+			if (err["message"] === "read ECONNRESET") {
 				removeDisconnectedUser();
 			}
 		}
