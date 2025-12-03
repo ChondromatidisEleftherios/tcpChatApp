@@ -15,45 +15,80 @@ import * as net from "net";
 	function communicate(socket) {
 		console.log(`Incoming connection from ${socket.remoteAddress} \n`);
 		socket.write(chatGuide);
-		socket.once("data", getClientName);
+		socket.once("data", getNewlyConnectedClientName);
 		socket.on("end", removeDisconnectedUser);
 		socket.on("error", handleError);
 
-		function getClientName(name) {
+		//All following Functions are nested inside the communicate function
+		function getNewlyConnectedClientName(name) {
 			const nameToString = name.toString();
 			clientsHashMap.set(nameToString, socket);
-			socket.on("data", forwardMessage);
+			socket.on("data", checkMessageForLogicErrors);
 		}
 
-		function forwardMessage(message) {
+		function checkMessageForLogicErrors(message) {
+			const socketUndefinedError = "The receiver does not exist or is NOT connected at the moment!\n";
+			const sendingMessageToYourselfError = "You cannot send messages to yourself!\n";
+			const emptyMessageContentError = "You cannot send an empty message!\n";
+
 			const messageSender = getSenderName(socket);
 			const clientOriginalMessage = message.toString();
 			const specialCharacterIndex = clientOriginalMessage.indexOf("/");
-			if (specialCharacterIndex >= 1) {
-				const clientMessage = clientOriginalMessage.slice(specialCharacterIndex + 1, clientOriginalMessage.length);
-				let messageReceiver = clientOriginalMessage.slice(0, specialCharacterIndex);
-				messageReceiver = messageReceiver.trim();
-				if (messageReceiver !== "everyone" && (messageReceiver !== "")) {
-					const receiverSocket = clientsHashMap.get(messageReceiver);
+			const [receiverSocket, clientMessage] = configureMessageFormat(clientOriginalMessage, specialCharacterIndex);
+			if (receiverSocket === undefined) {
+				socket.write(socketUndefinedError);
+			}
+			else if (receiverSocket === socket) {
+				socket.write(sendingMessageToYourselfError);
+			}
+			else if (clientMessage && clientMessage.trim() === "") { //clientMessage is checked to prevent a runtime error, so that it doesn;t try to trim a non string value
+				socket.write(emptyMessageContentError);
+			}
+			else if (receiverSocket && receiverSocket !== "everyone") {
+				forwardMessageToOneClient(messageSender, clientMessage, receiverSocket);
+			}
+			else if (receiverSocket && receiverSocket === "everyone") {
+				forwardMessageToEveryClient(messageSender, clientMessage);
+			}
+		}
 
-					if (receiverSocket === undefined) {
-						socket.write("User does not exist or is NOT connected at the moment!\n");
-					}
-					else if (receiverSocket === socket) {
-						socket.write("You cannot send messages to youself!\n");
-					}
-					else {
-						const formatMessage = `${messageSender}: ${clientMessage}`;
-						receiverSocket.write(formatMessage);
-					}
-				}
-				else {
-					const formatMessage = `${messageSender}: ${clientMessage}`;
-					sendMessageToEveryClient(messageSender, formatMessage);
-				}
+		function configureMessageFormat(clientOriginalMessage, specialCharacterIndex) {
+			const missingSpecialCharacterError = "Error!!! Special character / or Receiver name not found!\n";
+
+			if (specialCharacterIndex >= 1) {
+				const clientMsg = clientOriginalMessage.slice(specialCharacterIndex + 1, clientOriginalMessage.length);
+				let msgReceiver = clientOriginalMessage.slice(0, specialCharacterIndex);
+				msgReceiver = msgReceiver.trim();
+				const receiverSock = checkIfOneReceiver(msgReceiver);
+				return [receiverSock, clientMsg];
 			}
 			else {
-				socket.write("Error! No special character / found!\n");
+				socket.write(missingSpecialCharacterError)
+				return [false, false];
+			}
+		}
+
+		function checkIfOneReceiver(msgReceiver) {
+			if (msgReceiver !== "everyone") {
+				const receiverSock = clientsHashMap.get(msgReceiver);
+				return receiverSock;
+			}
+			else {
+				return "everyone";
+			}
+		}
+
+		function forwardMessageToOneClient(messageSender, clientMessage, receiverSocket) {
+			const formatMessage = `${messageSender}: ${clientMessage}`;
+			receiverSocket.write(formatMessage);
+		}
+
+		function forwardMessageToEveryClient(messageSender, clientMessage) {
+			const formatMessage = `${messageSender}: ${clientMessage}`;
+			for (let [client, sock] of clientsHashMap) {
+				if (client !== messageSender) {
+					sock.write(formatMessage);
+				}
 			}
 		}
 
@@ -70,15 +105,9 @@ import * as net from "net";
 				removeDisconnectedUser();
 			}
 		}
-
-		function sendMessageToEveryClient(messageSender, message) {
-			for (let [client, sock] of clientsHashMap) {
-				if (client !== messageSender) {
-					sock.write(message);
-				}
-			}
-		}
 	}
+
+	//Outside of communicate Function
 
 	server.listen({ port: portNum, host: loopbackAddress }, portAndIpInfo(portNum, loopbackAddress));
 
