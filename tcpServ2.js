@@ -15,25 +15,25 @@ import * as net from "net";
 	function communicate(socket) {
 		console.log(`Incoming connection from ${socket.remoteAddress} \n`);
 		socket.write(chatGuide);
-		socket.once("data", getClientName);
+		socket.once("data", getNewlyConnectedClientName);
 		socket.on("end", removeDisconnectedUser);
 		socket.on("error", handleError);
 
-		function getClientName(name) {
+		//All following Functions are nested inside the communicate function
+		function getNewlyConnectedClientName(name) {
 			const nameToString = name.toString();
 			clientsHashMap.set(nameToString, socket);
-			socket.on("data", forwardMessageToOneClient);
+			socket.on("data", checkMessageForLogicErrors);
 		}
 
-
-		function forwardMessageToOneClient(message) {
+		function checkMessageForLogicErrors(message) {
 			const socketUndefinedError = "The receiver does not exist or is NOT connected at the moment!\n";
 			const sendingMessageToYourselfError = "You cannot send messages to yourself!\n";
 			const emptyMessageContentError = "You cannot send an empty message!\n";
 
 			const clientOriginalMessage = message.toString();
 			const specialCharacterIndex = clientOriginalMessage.indexOf("/");
-			const [receiverSocket, clientMessage] = configureMessage(clientOriginalMessage, specialCharacterIndex);
+			const [receiverSocket, clientMessage] = configureMessageFormat(clientOriginalMessage, specialCharacterIndex);
 			if (receiverSocket === undefined) {
 				socket.write(socketUndefinedError);
 			}
@@ -45,12 +45,11 @@ import * as net from "net";
 			}
 			else if (receiverSocket) {
 				const messageSender = getSenderName(socket);
-				const formatMessage = `${messageSender}: ${clientMessage}`;
-				receiverSocket.write(formatMessage);
+				forwardMessageToOneClient(messageSender, clientMessage, receiverSocket);
 			}
 		}
 
-		function configureMessage(clientOriginalMessage, specialCharacterIndex) {
+		function configureMessageFormat(clientOriginalMessage, specialCharacterIndex) {
 			const missingSpecialCharacterError = "Error!!! Special character / or Receiver name not found!\n";
 
 			if (specialCharacterIndex >= 1) {
@@ -64,6 +63,11 @@ import * as net from "net";
 				socket.write(missingSpecialCharacterError)
 				return [false, false];
 			}
+		}
+
+		function forwardMessageToOneClient(messageSender, clientMessage, receiverSocket) {
+			const formatMessage = `${messageSender}: ${clientMessage}`;
+			receiverSocket.write(formatMessage);
 		}
 
 		function removeDisconnectedUser() {
@@ -97,3 +101,4 @@ import * as net from "net";
 	}
 
 }());
+
