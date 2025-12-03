@@ -27,27 +27,42 @@ import * as net from "net";
 
 
 		function forwardMessageToOneClient(message) {
-			const messageSender = getSenderName(socket);
+			const socketUndefinedError = "The receiver does not exist or is NOT connected at the moment!\n";
+			const sendingMessageToYourselfError = "You cannot send messages to yourself!\n";
+			const emptyMessageContentError = "You cannot send an empty message!\n";
+
 			const clientOriginalMessage = message.toString();
 			const specialCharacterIndex = clientOriginalMessage.indexOf("/");
+			const [receiverSocket, clientMessage] = configureMessage(clientOriginalMessage, specialCharacterIndex);
+			if (receiverSocket === undefined) {
+				socket.write(socketUndefinedError);
+			}
+			else if (receiverSocket === socket) {
+				socket.write(sendingMessageToYourselfError);
+			}
+			else if (clientMessage && clientMessage.trim() === "") {
+				socket.write(emptyMessageContentError);
+			}
+			else if (receiverSocket) {
+				const messageSender = getSenderName(socket);
+				const formatMessage = `${messageSender}: ${clientMessage}`;
+				receiverSocket.write(formatMessage);
+			}
+		}
+
+		function configureMessage(clientOriginalMessage, specialCharacterIndex) {
+			const missingSpecialCharacterError = "Error!!! Special character / or Receiver name not found!\n";
+
 			if (specialCharacterIndex >= 1) {
-				const clientMessage = clientOriginalMessage.slice(specialCharacterIndex + 1, clientOriginalMessage.length);
-				let messageReceiver = clientOriginalMessage.slice(0, specialCharacterIndex);
-				messageReceiver = messageReceiver.trim();
-				const receiverSocket = clientsHashMap.get(messageReceiver);
-				if (receiverSocket === undefined) {
-					socket.write("User does not exist or is NOT connected at the moment!\n");
-				}
-				else if (receiverSocket === socket) {
-					socket.write("You cannot send messages to youself!\n");
-				}
-				else {
-					const formatMessage = `${messageSender}: ${clientMessage}`;
-					receiverSocket.write(formatMessage);
-				}
+				const clientMsg = clientOriginalMessage.slice(specialCharacterIndex + 1, clientOriginalMessage.length);
+				let msgReceiver = clientOriginalMessage.slice(0, specialCharacterIndex);
+				msgReceiver = msgReceiver.trim();
+				const receiverSock = clientsHashMap.get(msgReceiver);
+				return [receiverSock, clientMsg];
 			}
 			else {
-				socket.write("Error! No special character / found!\n");
+				socket.write(missingSpecialCharacterError)
+				return [false, false];
 			}
 		}
 
