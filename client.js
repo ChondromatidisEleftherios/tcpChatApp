@@ -1,7 +1,3 @@
-//@ts-check
-
-"use strict";
-
 import * as net from "net";
 
 (function main() {
@@ -21,8 +17,8 @@ import * as net from "net";
 		console.log("\nSuccessfully Connected to Server! \n");
 		console.log("----- Chat area ----- \n");
 		client.write(username.toString());
-		process.stdin.on("data", getInput);
-		function getInput(input) {
+		process.stdin.on("data", sendMessage);
+		function sendMessage(input) {
 			const inputToString = input.toString();
 			if (inputToString.trim() === "" || inputToString.trim() === undefined) {
 				console.error("Empty Message! Try again! \n")
@@ -44,7 +40,7 @@ import * as net from "net";
 	}
 
 	function handleError(err) {
-		console.log(`Connection could not be made, error message: ${err["message"]}`);
+		console.error(`Connection could not be made, error message: ${err.message}`);
 	}
 
 

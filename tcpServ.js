@@ -1,7 +1,3 @@
-//@ts-check
-
-"use strict";
-
 import * as net from "net";
 
 (function main() {
@@ -9,7 +5,7 @@ import * as net from "net";
 	const portNum = 6666;
 	const loopbackAddress = "127.0.0.1";
 	const server = net.createServer(communicate);
-	server.maxConnections = 10;
+	server.maxConnections = 1;
 
 	function communicate(socket) {
 		console.log(`Incoming connection from ${socket.remoteAddress} \n`);
@@ -44,7 +40,7 @@ import * as net from "net";
 	server.listen({ port: portNum, host: loopbackAddress }, portAndIpInfo(portNum, loopbackAddress));
 
 	function handleError(err) {
-		console.log(`Connection could not be made, error message: ${err["message"]}`);
+		console.error(`Connection could not be made, error message: ${err.message}`);
 	}
 
 	function portAndIpInfo(portNum, loopbackAddress) {
