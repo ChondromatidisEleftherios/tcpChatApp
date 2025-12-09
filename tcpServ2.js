@@ -1,7 +1,3 @@
-//@ts-check
-
-"use strict";
-
 import * as net from "net";
 
 (function main() {
@@ -78,7 +74,7 @@ import * as net from "net";
 		}
 
 		function handleError(err) {
-			console.log(`Connection could not be made, error message: ${err["message"]}`);
+			console.log(`Connection could not be made, error message: ${err.message}`);
 			if (err["message"] === "read ECONNRESET") {
 				removeDisconnectedUser();
 			}
@@ -101,4 +97,3 @@ import * as net from "net";
 	}
 
 }());
-
