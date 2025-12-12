@@ -1,7 +1,3 @@
-//@ts-check
-
-"use strict";
-
 import * as net from "net";
 
 (function main() {
@@ -41,10 +37,10 @@ import * as net from "net";
 			else if (receiverSocket === socket) {
 				socket.write(sendingMessageToYourselfError);
 			}
-			else if (clientMessage && clientMessage.trim() === "") { //clientMessage is checked to prevent a runtime error, so that it doesn;t try to trim a non string value
+			else if (clientMessage && clientMessage.trim() === "") {
 				socket.write(emptyMessageContentError);
 			}
-			else if (receiverSocket && receiverSocket !== "everyone") {
+			else if (receiverSocket && receiverSocket !== "everyone") { //ΕΔΩ
 				forwardMessageToOneClient(messageSender, clientMessage, receiverSocket);
 			}
 			else if (receiverSocket && receiverSocket === "everyone") {
@@ -59,7 +55,7 @@ import * as net from "net";
 				const clientMsg = clientOriginalMessage.slice(specialCharacterIndex + 1, clientOriginalMessage.length);
 				let msgReceiver = clientOriginalMessage.slice(0, specialCharacterIndex);
 				msgReceiver = msgReceiver.trim();
-				const receiverSock = checkIfOneReceiver(msgReceiver);
+				const receiverSock = checkIfOneReceiver(msgReceiver); //ΕΔΩ
 				return [receiverSock, clientMsg];
 			}
 			else {
@@ -68,7 +64,7 @@ import * as net from "net";
 			}
 		}
 
-		function checkIfOneReceiver(msgReceiver) {
+		function checkIfOneReceiver(msgReceiver) { //ΕΔΩ
 			if (msgReceiver !== "everyone") {
 				const receiverSock = clientsHashMap.get(msgReceiver);
 				return receiverSock;
@@ -83,7 +79,7 @@ import * as net from "net";
 			receiverSocket.write(formatMessage);
 		}
 
-		function forwardMessageToEveryClient(messageSender, clientMessage) {
+		function forwardMessageToEveryClient(messageSender, clientMessage) { //ΕΔΩ
 			const formatMessage = `${messageSender}: ${clientMessage}`;
 			for (let [client, sock] of clientsHashMap) {
 				if (client !== messageSender) {
@@ -101,7 +97,7 @@ import * as net from "net";
 
 		function handleError(err) {
 			console.log(`Connection could not be made, error message: ${err["message"]}`);
-			if (err["message"] === "read ECONNRESET") {
+			if (err.message === "read ECONNRESET") {
 				removeDisconnectedUser();
 			}
 		}
